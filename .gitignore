@@ -42,3 +42,5 @@ ops/*.retry
 
 # HSpec
 .hspec-failures
+
+/stack.yaml.lock
