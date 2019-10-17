@@ -74,8 +74,7 @@ headOr ::
   a
   -> List a
   -> a
-headOr x Nil = x
-headOr _ (h :. _) = h
+headOr = foldRight const
 
 -- | The product of the elements of a list.
 --
@@ -115,7 +114,7 @@ sum = foldLeft (+) 0
 length ::
   List a
   -> Int
-length = foldLeft (\x _ -> x + 1) 0
+length = foldLeft (const . (+1)) 0
 
 -- | Map the given function on each element of the list.
 --
@@ -163,7 +162,7 @@ filter f = foldRight (\x -> if f x then (x :.) else id) Nil
   List a
   -> List a
   -> List a
-(++) xs ys = foldRight (:.) ys xs
+(++) = flip (foldRight (:.))
 
 infixr 5 ++
 
@@ -196,7 +195,7 @@ flatMap ::
   (a -> List b)
   -> List a
   -> List b
-flatMap f xs = flatten $ map f xs
+flatMap f = flatten . map f
 
 -- | Flatten a list of lists to a list (again).
 -- HOWEVER, this time use the /flatMap/ function that you just wrote.
@@ -209,7 +208,7 @@ flattenAgain = flatMap id
 
 -- | Convert a list of optional values to an optional list of values.
 --
--- * If the list contains all `Full` values, 
+-- * If the list contains all `Full` values,
 -- then return `Full` list of values.
 --
 -- * If the list contains one or more `Empty` values,
@@ -236,6 +235,8 @@ seqOptional = foldRight handle (Full Nil)
   where handle Empty _ = Empty
         handle _ Empty = Empty
         handle (Full x) (Full ys) = Full $ x :. ys
+-- handle :: Optional a -> Optional (List a) -> Optional (List a)
+-- What is twiceOptional?
 
 -- | Find the first element in the list matching the predicate.
 --
@@ -257,8 +258,12 @@ find ::
   (a -> Bool)
   -> List a
   -> Optional a
-find f xs = headOr Empty ops
-  where ops = map Full $ filter f xs
+find p x =
+  case filter p x of
+    Nil -> Empty
+    h:._ -> Full h
+-- find f xs = headOr Empty ops
+--  where ops = map Full $ filter f xs
 
 -- | Determine if the length of the given list is greater than 4.
 --
@@ -276,12 +281,8 @@ find f xs = headOr Empty ops
 lengthGT4 ::
   List a
   -> Bool
-lengthGT4 Nil = False
-lengthGT4 (_:.Nil) = False
-lengthGT4 (_:._:.Nil) = False
-lengthGT4 (_:._:._:.Nil) = False
-lengthGT4 (_:._:._:._:.Nil) = False
-lengthGT4 _ = True
+lengthGT4 (_:._:._:._:._:._) = True
+lengthGT4 _ = False
 
 -- | Reverse a list.
 --
@@ -325,7 +326,7 @@ produce f x = x :. produce f (f x)
 notReverse ::
   List a
   -> List a
-notReverse = id
+notReverse = reverse
 
 ---- End of list exercises
 
