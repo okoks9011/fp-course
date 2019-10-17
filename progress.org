@@ -2,8 +2,9 @@
   CLOSED: [2019-10-13 Sun 17:18]
 * DONE Course.Validation
   CLOSED: [2019-10-13 Sun 17:18]
-* Course.Optional
-* TODO Course.List
+* TODO Course.Optional
+* DONE Course.List
+  CLOSED: [2019-10-17 Thu 17:00]
 * Course.Functor
 * Course.Applicative
 * Course.Monad

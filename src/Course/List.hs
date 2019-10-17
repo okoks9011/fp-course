@@ -237,6 +237,7 @@ seqOptional = foldRight handle (Full Nil)
         handle (Full x) (Full ys) = Full $ x :. ys
 -- handle :: Optional a -> Optional (List a) -> Optional (List a)
 -- What is twiceOptional?
+-- seqOptional = foldRight (twiceOptional (:.)) (Full Nil)
 
 -- | Find the first element in the list matching the predicate.
 --
