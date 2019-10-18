@@ -80,8 +80,7 @@ bindOptional f (Full v) = f v
   -> Optional a
   -> Optional a
 (<+>) x@(Full _) _ = x
-(<+>) _ y@(Full _) = y
-(<+>) _ _ = Empty
+(<+>) _ y = y
 
 applyOptional :: Optional (a -> b) -> Optional a -> Optional b
 applyOptional f a = bindOptional (\f' -> mapOptional f' a) f

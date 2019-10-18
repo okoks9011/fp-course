@@ -2,7 +2,8 @@
   CLOSED: [2019-10-13 Sun 17:18]
 * DONE Course.Validation
   CLOSED: [2019-10-13 Sun 17:18]
-* TODO Course.Optional
+* DONE Course.Optional
+  CLOSED: [2019-10-18 Fri 23:08]
 * DONE Course.List
   CLOSED: [2019-10-17 Thu 17:00]
 * Course.Functor
