@@ -265,8 +265,7 @@ lift1 g fa = lift0 g <*> fa
   f a
   -> f b
   -> f b
-(*>) =
-  error "todo: Course.Applicative#(*>)"
+(*>) fa fb = const id <$> fa <*> fb
 
 -- | Apply, discarding the value of the second argument.
 -- Pronounced, left apply.
@@ -291,8 +290,7 @@ lift1 g fa = lift0 g <*> fa
   f b
   -> f a
   -> f b
-(<*) =
-  error "todo: Course.Applicative#(<*)"
+(<*) fa fb = const <$> fa <*> fb
 
 -- | Sequences a list of structures to a structure of list.
 --
@@ -314,8 +312,7 @@ sequence ::
   Applicative f =>
   List (f a)
   -> f (List a)
-sequence =
-  error "todo: Course.Applicative#sequence"
+sequence = foldRight (lift2 (:.)) (pure Nil)
 
 -- | Replicate an effect a given number of times.
 --
@@ -338,8 +335,7 @@ replicateA ::
   Int
   -> f a
   -> f (List a)
-replicateA =
-  error "todo: Course.Applicative#replicateA"
+replicateA n fa = sequence $ replicate n fa
 
 -- | Filter a list with a predicate that produces an effect.
 --
