@@ -10,8 +10,9 @@
   CLOSED: [2019-12-03 Tue 20:38]
 * DONE Course.Applicative
   CLOSED: [2019-12-05 Thu 16:25]
-* TODO Course.Monad
-* Course.FileIO
+* DONE Course.Monad
+  CLOSED: [2019-12-05 Thu 17:37]
+* TODO Course.FileIO
 * Course.State
 * Course.StateT
 * Course.Extend
