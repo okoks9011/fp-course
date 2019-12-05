@@ -47,8 +47,7 @@ instance Applicative ExactlyOne where
   pure ::
     a
     -> ExactlyOne a
-  pure =
-    error "todo: Course.Applicative pure#instance ExactlyOne"
+  pure = ExactlyOne
   (<*>) ::
     ExactlyOne (a -> b)
     -> ExactlyOne a
@@ -362,8 +361,7 @@ filtering ::
   (a -> f Bool)
   -> List a
   -> f (List a)
-filtering =
-  error "todo: Course.Applicative#filtering"
+filtering pred = foldRight (\a listFA -> (\p -> if p then (a :.) else id) <$> pred a <*> listFA) (pure Nil)
 
 -----------------------
 -- SUPPORT LIBRARIES --
