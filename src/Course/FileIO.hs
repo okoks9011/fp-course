@@ -39,7 +39,7 @@ Problem --
 
 Consideration --
   Try to avoid repetition. Factor out any common expressions.
-  
+
 Example --
 Given file files.txt, containing:
   a.txt
@@ -61,7 +61,7 @@ To test this module, load ghci in the root of the project directory, and do
 Example output:
 
 $ ghci
-GHCi, version ... 
+GHCi, version ...
 Loading package...
 Loading ...
 [ 1 of 28] Compiling (etc...
@@ -85,16 +85,17 @@ printFile ::
   FilePath
   -> Chars
   -> IO ()
-printFile =
-  error "todo: Course.FileIO#printFile"
+printFile filePath contents = putStrLn body
+  where body = listh "============ " ++ filePath ++ ('\n' :. contents)
 
 -- Given a list of (file name and file contents), print each.
 -- Use @printFile@.
 printFiles ::
   List (FilePath, Chars)
   -> IO ()
-printFiles =
-  error "todo: Course.FileIO#printFiles"
+printFiles = foldRight handle (return ())
+  where handle (filePath, contents) remain =
+          const remain =<< printFile filePath contents
 
 -- Given a file name, return (file name and file contents).
 -- Use @readFile@.
