@@ -52,7 +52,7 @@ instance Applicative ExactlyOne where
     ExactlyOne (a -> b)
     -> ExactlyOne a
     -> ExactlyOne b
-  (<*>) (ExactlyOne f) (ExactlyOne v) = ExactlyOne $ f v
+  ExactlyOne f <*> ExactlyOne v = ExactlyOne $ f v
 
 -- | Insert into a List.
 --
@@ -69,7 +69,7 @@ instance Applicative List where
     List (a -> b)
     -> List a
     -> List b
-  (<*>) listF listA = foldRight (\f b -> (f <$> listA) ++ b) Nil listF
+  listF <*> listA = foldRight (\f b -> (f <$> listA) ++ b) Nil listF
 
 -- | Insert into an Optional.
 --
@@ -92,8 +92,8 @@ instance Applicative Optional where
     Optional (a -> b)
     -> Optional a
     -> Optional b
-  (<*>) Empty _ = Empty
-  (<*>) (Full f) fa = f <$> fa
+  Empty <*> _ = Empty
+  Full f <*> fa = f <$> fa
 
 -- | Insert into a constant function.
 --
@@ -122,7 +122,7 @@ instance Applicative ((->) t) where
     ((->) t (a -> b))
     -> ((->) t a)
     -> ((->) t b)
-  (<*>) tf ta = \t -> tf t (ta t)
+  f <*> g = \x -> f x (g x)
 
 -- | Apply a binary function in the environment.
 --
@@ -264,7 +264,7 @@ lift1 g fa = lift0 g <*> fa
   f a
   -> f b
   -> f b
-(*>) fa fb = const id <$> fa <*> fb
+(*>) = lift2 $ const id
 
 -- | Apply, discarding the value of the second argument.
 -- Pronounced, left apply.
@@ -289,7 +289,7 @@ lift1 g fa = lift0 g <*> fa
   f b
   -> f a
   -> f b
-(<*) fa fb = const <$> fa <*> fb
+(<*) = lift2 const
 
 -- | Sequences a list of structures to a structure of list.
 --
@@ -361,7 +361,7 @@ filtering ::
   (a -> f Bool)
   -> List a
   -> f (List a)
-filtering pred = foldRight (\a listFA -> (\p -> if p then (a :.) else id) <$> pred a <*> listFA) (pure Nil)
+filtering pred = foldRight (\a -> lift2 (\p -> if p then (a :.) else id) (pred a)) (pure Nil)
 
 -----------------------
 -- SUPPORT LIBRARIES --
