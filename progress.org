@@ -12,8 +12,9 @@
   CLOSED: [2019-12-05 Thu 16:25]
 * DONE Course.Monad
   CLOSED: [2019-12-05 Thu 17:37]
-* TODO Course.FileIO
-* Course.State
+* DONE Course.FileIO
+  CLOSED: [2019-12-18 Wed 15:28]
+* TODO Course.State
 * Course.StateT
 * Course.Extend
 * Course.Comonad

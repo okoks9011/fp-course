@@ -85,31 +85,30 @@ printFile ::
   FilePath
   -> Chars
   -> IO ()
-printFile filePath contents = putStrLn body
-  where body = listh "============ " ++ filePath ++ ('\n' :. contents)
+printFile filePath contents =
+  putStrLn ("============ " ++ filePath) >>
+  putStrLn contents
 
 -- Given a list of (file name and file contents), print each.
 -- Use @printFile@.
 printFiles ::
   List (FilePath, Chars)
   -> IO ()
-printFiles = foldRight handle (return ())
-  where handle (filePath, contents) remain =
-          const remain =<< printFile filePath contents
+printFiles = void . sequence . (<$>) (uncurry printFile)
 
 -- Given a file name, return (file name and file contents).
 -- Use @readFile@.
 getFile ::
   FilePath
   -> IO (FilePath, Chars)
-getFile filePath = (\contents -> return (filePath, contents)) =<< readFile filePath
+getFile = lift2 (<$>) (,) readFile
 
 -- Given a list of file names, return list of (file name and file contents).
 -- Use @getFile@.
 getFiles ::
   List FilePath
   -> IO (List (FilePath, Chars))
-getFiles filePaths = sequence $ getFile <$> filePaths
+getFiles = sequence . (<$>) getFile
 
 -- Given a file name, read it and for each line in that file, read and print contents of each.
 -- Use @getFiles@ and @printFiles@.
@@ -126,7 +125,9 @@ main ::
   IO ()
 main = do
   args <- getArgs
-  run $ headOr Nil args
+  case args of
+    filePath :. Nil -> run filePath
+    _ -> putStrLn "Input filename"
 
 ----
 
