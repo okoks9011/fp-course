@@ -40,7 +40,7 @@ exec ::
   State s a
   -> s
   -> s
-exec state = snd . runState state
+exec (State k) = snd . k
 
 
 -- | Run the `State` seeded with `s` and retrieve the resulting value.
@@ -50,7 +50,7 @@ eval ::
   State s a
   -> s
   -> a
-eval state = fst . runState state
+eval (State k) = fst . k
 
 -- | A `State` where the state also distributes into the produced value.
 --
@@ -67,7 +67,7 @@ get = State (\s -> (s, s))
 put ::
   s
   -> State s ()
-put v = State (const ((), v))
+put = State . const . ((),)
 
 -- | Implement the `Functor` instance for `State s`.
 --
@@ -78,7 +78,9 @@ instance Functor (State s) where
     (a -> b)
     -> State s a
     -> State s b
-  (<$>) f state = State (\s -> (f $ eval state s, exec state s))
+  f <$> (State k) = State $ \initS ->
+    let (v, resultS) = k initS
+    in (f v, resultS)
 
 -- | Implement the `Applicative` instance for `State s`.
 --
@@ -106,7 +108,7 @@ instance Applicative (State s) where
         (a, resultS) = runState stateA nextS
     in (f a, resultS)
 
--- | Implement the `Bind` instance for `State s`.
+-- | Implement the `Monad` instance for `State s`.
 --
 -- >>> runState ((const $ put 2) =<< put 1) 0
 -- ((),2)
