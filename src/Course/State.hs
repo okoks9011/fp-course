@@ -103,10 +103,10 @@ instance Applicative (State s) where
     State s (a -> b)
     -> State s a
     -> State s b
-  (<*>) stateF stateA = State $ \initS ->
-    let (f, nextS) = runState stateF initS
-        (a, resultS) = runState stateA nextS
-    in (f a, resultS)
+  (State f) <*> (State a)  = State $ \initS ->
+    let (g, nextS) = f initS
+        (x, resultS) = a nextS
+    in (g x, resultS)
 
 -- | Implement the `Monad` instance for `State s`.
 --
@@ -120,9 +120,9 @@ instance Monad (State s) where
     (a -> State s b)
     -> State s a
     -> State s b
-  (=<<) f stateA = State $ \initS ->
-    let (a, nextS) = runState stateA initS
-    in runState (f a) nextS
+  f =<< (State a) = State $ \initS ->
+    let (x, nextS) = a initS
+    in runState (f x) nextS
 
 -- | Find the first element in a `List` that satisfies a given predicate.
 -- It is possible that no element is found, hence an `Optional` result.
