@@ -177,6 +177,18 @@ distinct listA =
   in eval result S.empty
 
 
+-- firstRepeat = listWithState findM S.member
+-- distinct = listWithState filtering S.notMember
+listWithState ::
+  Ord b =>
+  ((b -> State (S.Set b) Bool) -> t -> State (S.Set d) a)
+  -> (b -> S.Set b -> Bool)
+  -> t
+  -> a
+listWithState f m x =
+  eval (f (State . lift2 (lift2 (,)) m S.insert) x) S.empty
+
+
 -- | A happy number is a positive integer, where the sum of the square of its digits eventually reaches 1 after repetition.
 -- In contrast, a sad number (not a happy number) is where the sum of the square of its digits never reaches 1
 -- because it results in a recurring sequence.
