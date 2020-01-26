@@ -16,8 +16,9 @@
   CLOSED: [2019-12-18 Wed 15:28]
 * DONE Course.State
   CLOSED: [2020-01-22 Wed 20:57]
-* TODO Course.StateT
-* Course.Extend
+* DONE Course.StateT
+  CLOSED: [2020-01-26 Sun 16:12]
+* TODO Course.Extend
 * Course.Comonad
 * Course.Compose
 * Course.Traversable

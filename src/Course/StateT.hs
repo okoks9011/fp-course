@@ -253,9 +253,8 @@ instance Monad f => Applicative (OptionalT f) where
     -> OptionalT f b
 --  g <*> a = (<$> a) =<< g
 --  (OptionalT g) <*> (OptionalT a) = OptionalT $ lift2 (<*>) g a  -- why not?
-  OptionalT g <*> opTA = OptionalT $ do
-    opAB <- g
-    onFull (\h -> runOptionalT $ h <$> opTA) opAB
+--  OptionalT g <*> opTA = OptionalT $ g >>= onFull (\h -> runOptionalT $ h <$> opTA)
+  OptionalT g <*> OptionalT a = OptionalT $ g >>= onFull (\h -> (h <$>) <$> a)
 
 -- | Implement the `Monad` instance for `OptionalT f` given a Monad f.
 --
@@ -267,10 +266,10 @@ instance Monad f => Monad (OptionalT f) where
     -> OptionalT f a
     -> OptionalT f b
 --  g =<< (OptionalT fOpA) = (\opA -> (\a -> g a) =<< opA) =<< fOpA
-  g =<< OptionalT fOpA = OptionalT $ do
-    opA <- fOpA
+--  g =<< OptionalT fOpA = OptionalT $ do
+--    opA <- fOpA
 --    (runOptionalT . g <$> opA) ?? pure Empty
-    onFull (runOptionalT . g) opA
+  g =<< OptionalT a = OptionalT $ a >>= onFull (runOptionalT . g)
 
 -- | A `Logger` is a pair of a list of log values (`[l]`) and an arbitrary value (`a`).
 data Logger l a =
