@@ -39,7 +39,8 @@ instance Functor f => Functor (StateT s f) where
     (a -> b)
     -> StateT s f a
     -> StateT s f b
-  g <$> (StateT a) = StateT $ \s -> (\(pv, sv) -> (g pv, sv)) <$> a s
+--  g <$> StateT a = StateT $ \s -> (\(pv, sv) -> (g pv, sv)) <$> a s
+  g <$> StateT a = StateT $ (first g <$>) . a
 
 -- | Implement the `Applicative` instance for @StateT s f@ given a @Monad f@.
 --
@@ -65,13 +66,12 @@ instance Monad f => Applicative (StateT s f) where
   pure a = StateT $ pure . (a,)
 
   (<*>) ::
-   StateT s f (a -> b)
+    StateT s f (a -> b)
     -> StateT s f a
     -> StateT s f b
-  (StateT g) <*> (StateT a) = StateT $ \initS -> do
+  StateT g <*> StateT a = StateT $ \initS -> do
     (gv, nextS) <- g initS
-    (av, resultS) <- a nextS
-    return (gv av, resultS)
+    first gv <$> a nextS
 
 -- | Implement the `Monad` instance for @StateT s f@ given a @Monad f@.
 -- Make sure the state value is passed through in `bind`.
@@ -86,7 +86,7 @@ instance Monad f => Monad (StateT s f) where
     (a -> StateT s f b)
     -> StateT s f a
     -> StateT s f b
-  g =<< (StateT a) = StateT $ \initS -> do
+  g =<< StateT a = StateT $ \initS -> do
     (av, nextS) <- a initS
     runStateT (g av) nextS
 
@@ -97,10 +97,11 @@ type State' s a =
 -- | Provide a constructor for `State'` values
 --
 -- >>> runStateT (state' $ runState $ put 1) 0
--- ExactlyOne  ((),1)
+-- ExactlyOne ((),1)
 state' ::
   (s -> (a, s))
   -> State' s a
+-- state' a = StateT $ pure . a
 state' a = StateT $ pure <$> a
 
 -- | Provide an unwrapper for `State'` values.
@@ -175,7 +176,7 @@ distinct' ::
   List a
   -> List a
 distinct' xs =
-  let result = filtering (\a -> state' $ \s -> (S.notMember a s, S.insert a s)) xs
+  let result = filtering (\a -> state' (S.notMember a &&& S.insert a)) xs
   in eval' result S.empty
 
 -- | Remove all duplicate elements in a `List`.
@@ -214,7 +215,7 @@ instance Functor f => Functor (OptionalT f) where
     (a -> b)
     -> OptionalT f a
     -> OptionalT f b
-  g <$> (OptionalT a) = OptionalT $ (g <$>) <$> a
+  g <$> OptionalT a = OptionalT $ (g <$>) <$> a
 
 -- | Implement the `Applicative` instance for `OptionalT f` given a Monad f.
 --
@@ -252,7 +253,7 @@ instance Monad f => Applicative (OptionalT f) where
     -> OptionalT f b
 --  g <*> a = (<$> a) =<< g
 --  (OptionalT g) <*> (OptionalT a) = OptionalT $ lift2 (<*>) g a  -- why not?
-  (OptionalT g) <*> opTA = OptionalT $ do
+  OptionalT g <*> opTA = OptionalT $ do
     opAB <- g
     onFull (\h -> runOptionalT $ h <$> opTA) opAB
 
@@ -266,7 +267,7 @@ instance Monad f => Monad (OptionalT f) where
     -> OptionalT f a
     -> OptionalT f b
 --  g =<< (OptionalT fOpA) = (\opA -> (\a -> g a) =<< opA) =<< fOpA
-  g =<< (OptionalT fOpA) = OptionalT $ do
+  g =<< OptionalT fOpA = OptionalT $ do
     opA <- fOpA
 --    (runOptionalT . g <$> opA) ?? pure Empty
     onFull (runOptionalT . g) opA
@@ -285,7 +286,7 @@ instance Functor (Logger l) where
     (a -> b)
     -> Logger l a
     -> Logger l b
-  f <$> (Logger l v) = Logger l (f v)
+  f <$> Logger l v = Logger l (f v)
 
 -- | Implement the `Applicative` instance for `Logger`.
 --
@@ -304,7 +305,7 @@ instance Applicative (Logger l) where
     Logger l (a -> b)
     -> Logger l a
     -> Logger l b
-  (Logger l1 f) <*> (Logger l2 a) = Logger (l1 ++ l2) (f a)
+  Logger l1 f <*> Logger l2 a = Logger (l1 ++ l2) (f a)
 
 -- | Implement the `Monad` instance for `Logger`.
 -- The `bind` implementation must append log values to maintain associativity.
@@ -316,8 +317,8 @@ instance Monad (Logger l) where
     (a -> Logger l b)
     -> Logger l a
     -> Logger l b
-  f =<< (Logger l1 a) =
-    let (Logger l2 result) = f a
+  f =<< Logger l1 a =
+    let Logger l2 result = f a
     in Logger (l1 ++ l2) result
 
 -- | A utility function for producing a `Logger` with one log value.

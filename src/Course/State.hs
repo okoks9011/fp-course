@@ -78,7 +78,7 @@ instance Functor (State s) where
     (a -> b)
     -> State s a
     -> State s b
-  f <$> (State k) = State $ \initS ->
+  f <$> State k = State $ \initS ->
     let (v, resultS) = k initS
     in (f v, resultS)
 
@@ -103,7 +103,7 @@ instance Applicative (State s) where
     State s (a -> b)
     -> State s a
     -> State s b
-  (State f) <*> (State a)  = State $ \initS ->
+  State f <*> State a  = State $ \initS ->
     let (g, nextS) = f initS
         (x, resultS) = a nextS
     in (g x, resultS)
@@ -120,7 +120,7 @@ instance Monad (State s) where
     (a -> State s b)
     -> State s a
     -> State s b
-  f =<< (State a) = State $ \initS ->
+  f =<< State a = State $ \initS ->
     let (x, nextS) = a initS
     in runState (f x) nextS
 
