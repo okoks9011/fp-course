@@ -20,7 +20,8 @@
   CLOSED: [2020-01-26 Sun 16:12]
 * DONE Course.Extend
   CLOSED: [2020-01-26 Sun 16:44]
-* Course.Comonad
+* DONE Course.Comonad
+  CLOSED: [2020-01-26 Sun 17:01]
 * Course.Compose
 * Course.Traversable
 * Course.ListZipper
