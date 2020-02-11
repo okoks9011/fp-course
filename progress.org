@@ -22,8 +22,9 @@
   CLOSED: [2020-01-26 Sun 16:44]
 * DONE Course.Comonad
   CLOSED: [2020-01-26 Sun 17:01]
-* Course.Compose
-* Course.Traversable
+* DONE Course.Compose
+  CLOSED: [2020-02-11 Tue 20:13]
+* TODO Course.Traversable
 * Course.ListZipper
 * Course.Parser (see also Course.Person for the parsing rules)
 * Course.MoreParser

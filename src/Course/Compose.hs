@@ -35,12 +35,8 @@ instance (Applicative f, Applicative g) =>
     Compose f g (a -> b)
     -> Compose f g a
     -> Compose f g b
-  Compose fgab <*> Compose fga = Compose $ (<*>) <$> fgab <*> fga
-
-runCompose ::
-  Compose f g a
-  -> f (g a)
-runCompose (Compose c) = c
+--  Compose fgab <*> Compose fga = Compose $ (<*>) <$> fgab <*> fga
+  Compose fgab <*> Compose fga = Compose $ lift2 (<*>) fgab fga
 
 instance (Monad f, Monad g) =>
   Monad (Compose f g) where
