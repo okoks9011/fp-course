@@ -640,11 +640,19 @@ insertPushRight x = revZipper . insertPushLeft x . revZipper
 -- [5,12] >8< [15,24,12]
 instance Applicative ListZipper where
 -- /Tip:/ Use @List#repeat@.
-  pure =
-    error "todo: Course.ListZipper pure#instance ListZipper"
+  pure ::
+    a
+    -> ListZipper a
+  pure v = ListZipper vs v vs
+    where vs = repeat v
+
 -- /Tip:/ Use `zipWith`
-  (<*>) =
-    error "todo: Course.ListZipper (<*>)#instance ListZipper"
+  (<*>) ::
+    ListZipper (a -> b)
+    -> ListZipper a
+    -> ListZipper b
+  ListZipper lf vf rf <*> ListZipper l v r = ListZipper (app lf l) (vf v) (app rf r)
+    where app = zipWith ($)
 
 -- | Implement the `Applicative` instance for `MaybeListZipper`.
 --
