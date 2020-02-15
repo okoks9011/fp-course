@@ -26,8 +26,9 @@
   CLOSED: [2020-02-11 Tue 20:13]
 * DONE Course.Traversable
   CLOSED: [2020-02-14 Fri 14:41]
-* TODO Course.ListZipper
-* Course.Parser (see also Course.Person for the parsing rules)
+* DONE Course.ListZipper
+  CLOSED: [2020-02-15 Sat 16:56]
+* TODO Course.Parser (see also Course.Person for the parsing rules)
 * Course.MoreParser
 * Course.JsonParser
 * Course.Interactive

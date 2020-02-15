@@ -203,7 +203,7 @@ setFocus ::
   a
   -> ListZipper a
   -> ListZipper a
-setFocus v = withFocus $ const v
+setFocus = withFocus . const
 
 -- A flipped infix alias for `setFocus`. This allows:
 --
@@ -241,7 +241,7 @@ hasRight ::
 hasRight (ListZipper _ _ Nil) = False
 hasRight _ = True
 
--- | Seek to the left for a location matching a predicate, starting from the
+-- | Seek to the left for a location matching a predicate, excluding from the
 -- current one.
 --
 -- /Tip:/ Use `break`
@@ -272,7 +272,7 @@ findLeft p (ListZipper (hd :. tl) v r)
   | otherwise = findLeft p next
   where next = ListZipper tl hd (v :. r)
 
--- | Seek to the right for a location matching a predicate, starting from the
+-- | Seek to the right for a location matching a predicate, excluding from the
 -- current one.
 --
 -- /Tip:/ Use `break`
@@ -312,10 +312,11 @@ moveLeftLoop ::
   ListZipper a
   -> ListZipper a
 moveLeftLoop (ListZipper Nil v r) =
-  case reverse (v :. r) of
--- I know reverse (v :. r) can't be empty, but how can I let compiler knows?
-    Nil -> error "It can't be empty."
-    hd :. tl -> ListZipper tl hd Nil
+--  case reverse (v :. r) of
+--    Nil -> error "It can't be empty."
+--    hd :. tl -> ListZipper tl hd Nil
+  let (v', l') = foldLeft (\(p, q) a -> (a, p :. q)) (v, Nil) r
+  in ListZipper l' v' Nil
 moveLeftLoop (ListZipper (hd :. tl) v r) = ListZipper tl hd (v :. r)
 
 -- | Move the zipper right, or if there are no elements to the right, go to the far left.
@@ -419,14 +420,10 @@ moveLeftN ::
   Int
   -> ListZipper a
   -> MaybeListZipper a
-moveLeftN n z@(ListZipper l _ _)
+moveLeftN n z
+  | n == 0 = IsZ z
   | n < 0 = moveRightN (-n) z
-  | length l < n = IsNotZ
-moveLeftN n (ListZipper l v r) =
-  case vr' of
-    Nil -> error "It can't be empty."
-    hd :. tl -> IsZ $ ListZipper (drop n l) hd tl
-  where vr' = reverse (take n l) ++ (v :. r)
+  | otherwise = moveLeftN (n - 1) -<< moveLeft z
 
 -- | Move the focus right the given number of positions. If the value is negative, move left instead.
 --
@@ -550,11 +547,10 @@ index (ListZipper l _ _) = length l
 end ::
   ListZipper a
   -> ListZipper a
-end (ListZipper l v r) =
-  case lv' of
-    Nil -> error "It can't be empty."
-    hd :. tl -> ListZipper tl hd Nil
-  where lv' = reverse r ++ (v :. l)
+end z =
+  case moveRight z of
+    IsNotZ -> z
+    IsZ z' -> end z'
 
 -- | Move the focus to the start of the zipper.
 --
@@ -568,9 +564,9 @@ start ::
   ListZipper a
   -> ListZipper a
 start z =
-  case toList z of
-    Nil -> error "It can't be empty."
-    hd :. tl -> ListZipper Nil hd tl
+  case moveLeft z of
+    IsNotZ -> z
+    IsZ z' -> start z'
 
 -- | Delete the current focus and pull the left values to take the empty position.
 --
@@ -751,7 +747,8 @@ instance Traversable ListZipper where
 --  traverse g (ListZipper l v r) =
 --    lift3 ListZipper (traverse g l) (g v) (traverse g r)
   traverse g (ListZipper l v r) =
-    ListZipper <$> traverse g l <*> g v <*> traverse g r
+    ListZipper . reverse <$> traverse g (reverse l) <*> g v <*> traverse g r
+-- why reverse left part?
 
 -- | Implement the `Traversable` instance for `MaybeListZipper`.
 --
