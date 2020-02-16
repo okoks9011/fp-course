@@ -12,6 +12,7 @@
   CLOSED: [2019-12-05 Thu 16:25]
 * DONE Course.Monad
   CLOSED: [2019-12-05 Thu 17:37]
+* TODO Course.Alternative
 * DONE Course.FileIO
   CLOSED: [2019-12-18 Wed 15:28]
 * DONE Course.State
@@ -22,6 +23,7 @@
   CLOSED: [2020-01-26 Sun 16:44]
 * DONE Course.Comonad
   CLOSED: [2020-01-26 Sun 17:01]
+* TODO Course.Contravariant
 * DONE Course.Compose
   CLOSED: [2020-02-11 Tue 20:13]
 * DONE Course.Traversable

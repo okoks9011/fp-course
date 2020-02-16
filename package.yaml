@@ -48,8 +48,10 @@ library:
   - Course
   - Course.Anagrams
   - Course.Applicative
+  - Course.Alternative
   - Course.Cheque
   - Course.Comonad
+  - Course.Contravariant
   - Course.Compose
   - Course.Core
   - Course.ExactlyOne
