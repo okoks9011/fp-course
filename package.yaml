@@ -72,11 +72,31 @@ library:
   - Course.StateT
   - Course.Traversable
   - Course.Validation
+  - Test.ApplicativeTest
+  - Test.ChequeTest
+  - Test.ComonadTest
+  - Test.ExtendTest
+  - Test.Framework
+  - Test.Framework.Property
+  - Test.Framework.Random
+  - Test.FunctorTest
+  - Test.JsonParserTest
+  - Test.ListTest
+  - Test.Loader
+  - Test.MonadTest
+  - Test.MoreParserTest
+  - Test.OptionalTest
+  - Test.ParserTest
+  - Test.StateTest
+  - Test.StateTTest
+  - Test.TraversableTest
+  - Test.ValidationTest
 
   dependencies:
   - base <5 && >=4
   - containers >=0.4.0.0
   - array >=0.4
+  - time
 
 tests:
   course-tests:
