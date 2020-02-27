@@ -217,6 +217,64 @@ instance Applicative Parser where
     -> Parser b
   f <*> a = (<$> a) =<< f
 
+-- | Return a parser that produces a character but fails if
+--
+--   * The input is empty.
+--
+--   * The character does not satisfy the given predicate.
+--
+-- /Tip:/ The @(=<<)@, @unexpectedCharParser@ and @character@ functions will be helpful here.
+--
+-- >>> parse (satisfy isUpper) "Abc"
+-- Result >bc< 'A'
+--
+-- >>> isErrorResult (parse (satisfy isUpper) "abc")
+-- True
+satisfy ::
+  (Char -> Bool)
+  -> Parser Char
+-- satisfy pred =
+--   (\r -> if pred r then
+--            pure r
+--          else
+--            unexpectedCharParser r) =<< character
+satisfy pred =
+  character >>= lift3 bool unexpectedCharParser pure pred
+
+-- | Return a parser that produces the given character but fails if
+--
+--   * The input is empty.
+--
+--   * The produced character is not equal to the given character.
+--
+-- /Tip:/ Use the @satisfy@ function.
+is ::
+  Char -> Parser Char
+is = satisfy . (==)
+
+-- | Return a parser that produces a character between '0' and '9' but fails if
+--
+--   * The input is empty.
+--
+--   * The produced character is not a digit.
+--
+-- /Tip:/ Use the @satisfy@ and @Data.Char#isDigit@ functions.
+digit ::
+  Parser Char
+digit = satisfy isDigit
+
+--
+-- | Return a parser that produces a space character but fails if
+--
+--   * The input is empty.
+--
+--   * The produced character is not a space.
+--
+-- /Tip:/ Use the @satisfy@ and @Data.Char#isSpace@ functions.
+space ::
+  Parser Char
+space = satisfy isSpace
+
 -- | Return a parser that continues producing a list of values from the given parser.
 --
 -- /Tip:/ Use @list1@, @pure@ and @(|||)@.
@@ -241,7 +299,7 @@ instance Applicative Parser where
 list ::
   Parser a
   -> Parser (List a)
-list a = P $ parse (list1 a ||| pure Nil)
+list a = list1 a ||| pure Nil
 
 -- | Return a parser that produces at least one value from the given parser then
 -- continues producing a list of values from the given parser (to ultimately produce a non-empty list).
@@ -259,63 +317,9 @@ list a = P $ parse (list1 a ||| pure Nil)
 list1 ::
   Parser a
   -> Parser (List a)
-list1 a = (\r -> (r :.) <$> list a) =<< a
-
--- | Return a parser that produces a character but fails if
---
---   * The input is empty.
---
---   * The character does not satisfy the given predicate.
---
--- /Tip:/ The @(=<<)@, @unexpectedCharParser@ and @character@ functions will be helpful here.
---
--- >>> parse (satisfy isUpper) "Abc"
--- Result >bc< 'A'
---
--- >>> isErrorResult (parse (satisfy isUpper) "abc")
--- True
-satisfy ::
-  (Char -> Bool)
-  -> Parser Char
-satisfy pred =
-  (\r -> if pred r then
-           pure r
-         else
-           unexpectedCharParser r) =<< character
-
--- | Return a parser that produces the given character but fails if
---
---   * The input is empty.
---
---   * The produced character is not equal to the given character.
---
--- /Tip:/ Use the @satisfy@ function.
-is ::
-  Char -> Parser Char
-is c = satisfy (c ==)
-
--- | Return a parser that produces a character between '0' and '9' but fails if
---
---   * The input is empty.
---
---   * The produced character is not a digit.
---
--- /Tip:/ Use the @satisfy@ and @Data.Char#isDigit@ functions.
-digit ::
-  Parser Char
-digit = satisfy Data.Char.isDigit
-
---
--- | Return a parser that produces a space character but fails if
---
---   * The input is empty.
---
---   * The produced character is not a space.
---
--- /Tip:/ Use the @satisfy@ and @Data.Char#isSpace@ functions.
-space ::
-  Parser Char
-space = satisfy Data.Char.isSpace
+list1 a = do
+  r <- a
+  (r :.) <$> list a
 
 -- | Return a parser that produces one or more space characters
 -- (consuming until the first non-space) but fails if
@@ -338,7 +342,7 @@ spaces1 = list1 space
 -- /Tip:/ Use the @satisfy@ and @Data.Char#isLower@ functions.
 lower ::
   Parser Char
-lower = satisfy Data.Char.isLower
+lower = satisfy isLower
 
 -- | Return a parser that produces an upper-case character but fails if
 --
@@ -349,7 +353,7 @@ lower = satisfy Data.Char.isLower
 -- /Tip:/ Use the @satisfy@ and @Data.Char#isUpper@ functions.
 upper ::
   Parser Char
-upper = satisfy Data.Char.isUpper
+upper = satisfy isUpper
 
 -- | Return a parser that produces an alpha character but fails if
 --
@@ -360,7 +364,7 @@ upper = satisfy Data.Char.isUpper
 -- /Tip:/ Use the @satisfy@ and @Data.Char#isAlpha@ functions.
 alpha ::
   Parser Char
-alpha = satisfy Data.Char.isAlpha
+alpha = satisfy isAlpha
 
 -- | Return a parser that sequences the given list of parsers by producing all their results
 -- but fails on the first failing parser of the list.
@@ -376,8 +380,8 @@ alpha = satisfy Data.Char.isAlpha
 sequenceParser ::
   List (Parser a)
   -> Parser (List a)
-sequenceParser = foldRight handle (pure Nil)
-  where handle a b = (\r -> (r :.) <$> b) =<< a
+-- sequenceParser = foldRight (lift2 (:.)) (pure Nil)
+sequenceParser = sequence
 
 -- | Return a parser that produces the given number of values off the given parser.
 -- This parser fails if the given parser fails in the attempt to produce the given number of values.
@@ -393,7 +397,7 @@ thisMany ::
   Int
   -> Parser a
   -> Parser (List a)
-thisMany n a = sequenceParser $ replicate n a
+thisMany = replicateA
 
 -- | This one is done for you.
 --
@@ -426,7 +430,7 @@ ageParser =
 -- True
 firstNameParser ::
   Parser Chars
-firstNameParser = (\r -> (r :.) <$> list lower) =<< upper
+firstNameParser = lift2 (:.) upper (list lower)
 
 -- | Write a parser for Person.surname.
 --
@@ -469,7 +473,8 @@ surnameParser = do
 -- True
 smokerParser ::
   Parser Bool
-smokerParser = ('y' ==) <$> (is 'y' ||| is 'n')
+-- smokerParser = ('y' ==) <$> (is 'y' ||| is 'n')
+smokerParser = (True <$ is 'y') ||| (False <$ is 'n')
 
 -- | Write part of a parser for Person#phoneBody.
 -- This parser will only produce a string of digits, dots or hyphens.
