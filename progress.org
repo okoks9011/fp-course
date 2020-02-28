@@ -24,7 +24,8 @@
   CLOSED: [2020-01-26 Sun 16:44]
 * DONE Course.Comonad
   CLOSED: [2020-01-26 Sun 17:01]
-* TODO Course.Contravariant
+* DONE Course.Contravariant
+  CLOSED: [2020-02-28 Fri 21:47]
 * DONE Course.Compose
   CLOSED: [2020-02-11 Tue 20:13]
 * DONE Course.Traversable
