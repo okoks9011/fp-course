@@ -59,14 +59,15 @@ infixl 3 <|>
 instance Alternative Optional where
   zero ::
     Optional a
-  zero =
-    error "todo: Course.Alternative zero#instance Optional"
+  zero = Empty
+
   (<|>) ::
     Optional a
     -> Optional a
     -> Optional a
-  (<|>) =
-    error "todo: Course.Alternative (<|>)#instance Optional"
+  Full v <|> _ = Full v
+  _ <|> Full v = Full v
+  _ <|> _ = Empty
 
 -- | Append the lists.
 -- This instance views lists as a non-deterministic choice between elements,
@@ -83,14 +84,13 @@ instance Alternative Optional where
 instance Alternative List where
   zero ::
     List a
-  zero =
-    error "todo: Course.Alternative zero#instance List"
+  zero = Nil
+
   (<|>) ::
     List a
     -> List a
     -> List a
-  (<|>) =
-    error "todo: Course.Alternative (<|>)#instance List"
+  (<|>) = (++)
 
 -- | Choose the first succeeding parser
 --
@@ -110,14 +110,13 @@ instance Alternative List where
 instance Alternative Parser where
   zero ::
     Parser a
-  zero =
-    error "todo: Course.Alternative zero#instance Parser"
+  zero = constantParser UnexpectedEof
+
   (<|>) ::
     Parser a
     -> Parser a
     -> Parser a
-  (<|>) =
-    error "todo: Course.Alternative (<|>)#instance Parser"
+  (<|>) = (|||)
 
 -- | Run the provided Alternative action zero or more times, collecting
 -- a list of the results.
@@ -142,8 +141,7 @@ instance Alternative Parser where
 -- >>> parse (many (character *> valueParser 'v')) ""
 -- Result >< ""
 many :: Alternative k => k a -> k (List a)
-many =
-  error "todo: Course.Alternative many"
+many a = some a <|> pure Nil
 
 -- | Run the provided Alternative action one or more times, collecting
 -- a list of the results.
@@ -159,15 +157,14 @@ many =
 -- >>> isErrorResult (parse (some (character *> valueParser 'v')) "")
 -- True
 some :: Alternative k => k a -> k (List a)
-some =
-  error "todo: Course.Alternative some"
+some a = lift2 (:.) a (some a)
 
 -- | Combine a list of alternatives
 --
 -- >>> aconcat (Nil :: List (List Int))
 -- []
 --
--- >>> aconcat ((3:.4:.Nil) :. Nil :. (5:.6:.Nil) :. Nil
+-- >>> aconcat ((3:.4:.Nil) :. (5:.6:.Nil) :. Nil)
 -- [3,4,5,6]
 
 -- >>> aconcat (Empty :. Empty :. Full 7 :. Empty :. Full 8 :. Empty :. Nil)
@@ -175,5 +172,4 @@ some =
 --
 -- /Note:/ In the standard library, this function is called @asum@
 aconcat :: Alternative k => List (k a) -> k a
-aconcat =
-  error "todo: Course.Alternative aconcat"
+aconcat = foldRight (<|>) zero

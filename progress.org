@@ -12,7 +12,8 @@
   CLOSED: [2019-12-05 Thu 16:25]
 * DONE Course.Monad
   CLOSED: [2019-12-05 Thu 17:37]
-* TODO Course.Alternative
+* DONE Course.Alternative
+  CLOSED: [2020-02-28 Fri 21:19]
 * DONE Course.FileIO
   CLOSED: [2019-12-18 Wed 15:28]
 * DONE Course.State
