@@ -13,6 +13,8 @@ import Course.Monad
 import Course.Functor
 import Course.Traversable
 
+import qualified Data.List as L
+
 -- $setup
 -- >>> :set -XOverloadedStrings
 -- >>> import Course.Parser(isErrorResult, character, lower, is)
@@ -247,8 +249,11 @@ betweenCharTok head tail = between (is head) (is tail)
 -- True
 hex ::
   Parser Char
-hex =
-  error "todo: Course.MoreParser#hex"
+hex = convert =<< replicateA 4 (satisfy isHexDigit)
+  where convert s =
+          case readHex s of
+            Empty -> constantParser $ UnexpectedString s
+            Full h -> pure $ chr h
 
 -- | Write a function that parses the character 'u' followed by 4 hex digits and return the character value.
 --
@@ -270,8 +275,7 @@ hex =
 -- True
 hexu ::
   Parser Char
-hexu =
-  error "todo: Course.MoreParser#hexu"
+hexu = const hex =<< is 'u'
 
 -- | Write a function that produces a non-empty list of values coming off the given parser (which must succeed at least once),
 -- separated by the second given parser.
@@ -293,8 +297,7 @@ sepby1 ::
   Parser a
   -> Parser s
   -> Parser (List a)
-sepby1 =
-  error "todo: Course.MoreParser#sepby1"
+sepby1 pc ps = lift2 (:.) pc $ list (const pc =<< ps)
 
 -- | Write a function that produces a list of values coming off the given parser,
 -- separated by the second given parser.
@@ -316,8 +319,7 @@ sepby ::
   Parser a
   -> Parser s
   -> Parser (List a)
-sepby =
-  error "todo: Course.MoreParser#sepby"
+sepby pc ps = sepby1 pc ps ||| pure Nil
 
 -- | Write a parser that asserts that there is no remaining input.
 --
@@ -328,8 +330,10 @@ sepby =
 -- True
 eof ::
   Parser ()
-eof =
-  error "todo: Course.MoreParser#eof"
+eof = P $ \i ->
+  case i of
+    Nil -> Result Nil ()
+    _ -> UnexpectedString i
 
 -- | Write a parser that produces a character that satisfies all of the given predicates.
 --
@@ -349,11 +353,15 @@ eof =
 --
 -- >>> isErrorResult (parse (satisfyAll (isUpper :. (/= 'X') :. Nil)) "abc")
 -- True
+andList ::
+  List Bool
+  -> Bool
+andList = foldRight (&&) True
+
 satisfyAll ::
   List (Char -> Bool)
   -> Parser Char
-satisfyAll =
-  error "todo: Course.MoreParser#satisfyAll"
+satisfyAll preds = satisfy $ andList . sequence preds
 
 -- | Write a parser that produces a character that satisfies any of the given predicates.
 --
@@ -370,11 +378,15 @@ satisfyAll =
 --
 -- >>> isErrorResult (parse (satisfyAny (isLower :. (/= 'X') :. Nil)) "")
 -- True
+orList ::
+  List Bool
+  -> Bool
+orList = foldRight (||) False
+
 satisfyAny ::
   List (Char -> Bool)
   -> Parser Char
-satisfyAny =
-  error "todo: Course.MoreParser#satisfyAny"
+satisfyAny preds = satisfy $ orList . sequence preds
 
 -- | Write a parser that parses between the two given characters, separated by a comma character ','.
 --
