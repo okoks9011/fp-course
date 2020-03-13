@@ -1,6 +1,7 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE RebindableSyntax #-}
+{-# LANGUAGE LambdaCase #-}
 
 module Course.MoreParser where
 
@@ -114,7 +115,7 @@ string ::
   -> Parser Chars
 string = traverse is
 
--- | Write a function that parsers the given string, followed by 0 or more spaces.
+-- | Write a function that parses the given string, followed by 0 or more spaces.
 --
 -- /Tip:/ Use `tok` and `string`.
 --
@@ -230,7 +231,7 @@ betweenCharTok ::
   -> Char
   -> Parser a
   -> Parser a
-betweenCharTok head tail = between (charTok head) $ const (is tail) =<< spaces
+betweenCharTok head tail = between (charTok head) (charTok tail)
 
 -- | Write a function that parses 4 hex digits and return the character value.
 --
@@ -275,7 +276,7 @@ hex = convert =<< replicateA 4 (satisfy isHexDigit)
 -- True
 hexu ::
   Parser Char
-hexu = const hex =<< is 'u'
+hexu = is 'u' *> hex
 
 -- | Write a function that produces a non-empty list of values coming off the given parser (which must succeed at least once),
 -- separated by the second given parser.
@@ -297,7 +298,7 @@ sepby1 ::
   Parser a
   -> Parser s
   -> Parser (List a)
-sepby1 pc ps = lift2 (:.) pc $ list (const pc =<< ps)
+sepby1 pc ps = lift2 (:.) pc $ list (ps *> pc)
 
 -- | Write a function that produces a list of values coming off the given parser,
 -- separated by the second given parser.
@@ -330,10 +331,9 @@ sepby pc ps = sepby1 pc ps ||| pure Nil
 -- True
 eof ::
   Parser ()
-eof = P $ \i ->
-  case i of
+eof = P $ \case
     Nil -> Result Nil ()
-    _ -> UnexpectedString i
+    x -> ExpectedEof x
 
 -- | Write a parser that produces a character that satisfies all of the given predicates.
 --
@@ -418,4 +418,4 @@ betweenSepbyComma ::
   -> Char
   -> Parser a
   -> Parser (List a)
-betweenSepbyComma head tail a = betweenCharTok head tail $ sepby (tok a) commaTok
+betweenSepbyComma head tail pa = betweenCharTok head tail $ sepby (tok pa) commaTok

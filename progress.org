@@ -34,8 +34,9 @@
   CLOSED: [2020-02-15 Sat 16:56]
 * DONE Course.Parser (see also Course.Person for the parsing rules)
   CLOSED: [2020-02-28 Fri 00:56]
-* TODO Course.MoreParser
-* Course.JsonParser
+* DONE Course.MoreParser
+  CLOSED: [2020-03-14 Sat 00:44]
+* TODO Course.JsonParser
 * Course.Interactive
 * Course.Anagrams
 * Course.FastAnagrams

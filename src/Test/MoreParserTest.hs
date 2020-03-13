@@ -220,7 +220,7 @@ betweenCharTokTest =
     , testCase "succeeds: digits1" $
         parse (betweenCharTok '[' ']' digits1) "[123]" @?= Result "" "123"
     , testCase "succeeds: with spaces between [ ]" $
-        parse (betweenCharTok '[' ']' digits1) "[ 123 ]" @?= Result "" "123"
+        parse (betweenCharTok '[' ']' digits1) "[ 123] " @?= Result "" "123"
   ]
 
 hexTest :: TestTree
