@@ -230,7 +230,7 @@ betweenCharTok ::
   -> Char
   -> Parser a
   -> Parser a
-betweenCharTok head tail = between (is head) (is tail)
+betweenCharTok head tail = between (charTok head) $ const (is tail) =<< spaces
 
 -- | Write a function that parses 4 hex digits and return the character value.
 --
@@ -398,6 +398,9 @@ satisfyAny preds = satisfy $ orList . sequence preds
 -- >>> parse (betweenSepbyComma '[' ']' lower) "[]"
 -- Result >< ""
 --
+-- >>> parse (betweenSepbyComma '[' ']' lower) "[a,  b, c]"
+-- Result >< "abc"
+--
 -- >>> isErrorResult (parse (betweenSepbyComma '[' ']' lower) "[A]")
 -- True
 --
@@ -409,10 +412,10 @@ satisfyAny preds = satisfy $ orList . sequence preds
 --
 -- >>> isErrorResult (parse (betweenSepbyComma '[' ']' lower) "a]")
 -- True
+
 betweenSepbyComma ::
   Char
   -> Char
   -> Parser a
   -> Parser (List a)
-betweenSepbyComma =
-  error "todo: Course.MoreParser#betweenSepbyComma"
+betweenSepbyComma head tail a = betweenCharTok head tail $ sepby (tok a) commaTok

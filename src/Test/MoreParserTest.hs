@@ -219,6 +219,8 @@ betweenCharTokTest =
         parse (betweenCharTok '[' ']' character) "[a]" @?= Result "" 'a'
     , testCase "succeeds: digits1" $
         parse (betweenCharTok '[' ']' digits1) "[123]" @?= Result "" "123"
+    , testCase "succeeds: with spaces between [ ]" $
+        parse (betweenCharTok '[' ']' digits1) "[ 123 ]" @?= Result "" "123"
   ]
 
 hexTest :: TestTree
@@ -329,6 +331,8 @@ betweenSepbyCommaTest =
         parse (betweenSepbyComma '[' ']' lower) "[a,b,c]" @?= Result "" "abc"
     , testCase "succeeds --- 3 padded matches" $
         parse (betweenSepbyComma '[' ']' lower) "[a,  b, c]" @?= Result "" "abc"
+    , testCase "succeeds --- 3 padded matches 2" $
+        parse (betweenSepbyComma '[' ']' lower) "[ a,  b, c ]" @?= Result "" "abc"
     , testCase "succeeds --- digits1" $
         parse (betweenSepbyComma '[' ']' digits1) "[123,456]" @?= Result "" ("123":."456":.Nil)
   ]
