@@ -14,6 +14,7 @@ import Course.Applicative
 import Course.Monad
 import Course.List
 import Course.Optional
+import qualified Prelude as P
 
 -- $setup
 -- >>> :set -XOverloadedStrings
@@ -79,7 +80,7 @@ toSpecialCharacter c =
               ('\\', Backslash) :.
               Nil
   in snd <$> find ((==) c . fst) table
-  
+
 -- | Parse a JSON string. Handle double-quotes, special characters, hexadecimal characters. See http://json.org for the full list of control characters in JSON.
 --
 -- /Tip:/ Use `hex`, `fromSpecialCharacter`, `between`, `is`, `charTok`, `toSpecialCharacter`.
@@ -110,7 +111,11 @@ toSpecialCharacter c =
 jsonString ::
   Parser Chars
 jsonString =
-  error "todo: Course.JsonParser#jsonString"
+  between (is '"') (charTok '"') pBody
+  where pSp = character >>= \c ->
+          optional (pure . fromSpecialCharacter) (unexpectedCharParser c) (toSpecialCharacter c)
+        pNoneSp = noneof "\\\""
+        pBody = list $ pNoneSp ||| is '\\' *> (pSp ||| hexu)
 
 -- | Parse a JSON rational.
 --
@@ -138,8 +143,9 @@ jsonString =
 -- True
 jsonNumber ::
   Parser Rational
-jsonNumber =
-  error "todo: Course.JsonParser#jsonNumber"
+jsonNumber = pValidNumber >>= \s -> optional pure (unexpStrParser s) (fst <$> readFloats s)
+  where pValidNumber = list $ digit ||| is '-' ||| is '.'
+        unexpStrParser = constantParser . UnexpectedString
 
 -- | Parse a JSON true literal.
 --
@@ -152,8 +158,7 @@ jsonNumber =
 -- True
 jsonTrue ::
   Parser Chars
-jsonTrue =
-  error "todo: Course.JsonParser#jsonTrue"
+jsonTrue = string "true"
 
 -- | Parse a JSON false literal.
 --
@@ -166,8 +171,7 @@ jsonTrue =
 -- True
 jsonFalse ::
   Parser Chars
-jsonFalse =
-  error "todo: Course.JsonParser#jsonFalse"
+jsonFalse = string "false"
 
 -- | Parse a JSON null literal.
 --
@@ -180,8 +184,7 @@ jsonFalse =
 -- True
 jsonNull ::
   Parser Chars
-jsonNull =
-  error "todo: Course.JsonParser#jsonNull"
+jsonNull = string "null"
 
 -- | Parse a JSON array.
 --
@@ -203,8 +206,7 @@ jsonNull =
 -- Result >< [JsonTrue,JsonString "abc",JsonArray [JsonFalse]]
 jsonArray ::
   Parser (List JsonValue)
-jsonArray =
-  error "todo: Course.JsonParser#jsonArray"
+jsonArray = betweenSepbyComma '[' ']' jsonValue
 
 -- | Parse a JSON object.
 --
@@ -223,8 +225,8 @@ jsonArray =
 -- Result >xyz< [("key1",JsonTrue),("key2",JsonFalse)]
 jsonObject ::
   Parser Assoc
-jsonObject =
-  error "todo: Course.JsonParser#jsonObject"
+jsonObject = betweenSepbyComma '{' '}' pKeyPair
+  where pKeyPair = lift2 (,) jsonString (charTok ':' *> jsonValue)
 
 -- | Parse a JSON value.
 --
