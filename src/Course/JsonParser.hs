@@ -235,15 +235,20 @@ jsonObject = betweenSepbyComma '{' '}' pKeyPair
 -- >>> parse jsonValue "true"
 -- Result >< JsonTrue
 --
--- >>> parse jsonObject "{ \"key1\" : true , \"key2\" : [7, false] }"
+-- >>> parse jsonValue "{ \"key1\" : true , \"key2\" : [7, false] }"
 -- Result >< [("key1",JsonTrue),("key2",JsonArray [JsonRational (7 % 1),JsonFalse])]
 --
--- >>> parse jsonObject "{ \"key1\" : true , \"key2\" : [7, false] , \"key3\" : { \"key4\" : null } }"
+-- >>> parse jsonValue "{ \"key1\" : true , \"key2\" : [7, false] , \"key3\" : { \"key4\" : null } }"
 -- Result >< [("key1",JsonTrue),("key2",JsonArray [JsonRational (7 % 1),JsonFalse]),("key3",JsonObject [("key4",JsonNull)])]
 jsonValue ::
   Parser JsonValue
-jsonValue =
-   error "todo: Course.JsonParser#jsonValue"
+jsonValue = JsonString <$> jsonString
+  ||| JsonRational <$> jsonNumber
+  ||| JsonObject <$> jsonObject
+  ||| JsonArray <$> jsonArray
+  ||| jsonTrue *> pure JsonTrue
+  ||| jsonFalse *> pure JsonFalse
+  ||| jsonNull *> pure JsonNull
 
 -- | Read a file into a JSON value.
 --
@@ -251,5 +256,6 @@ jsonValue =
 readJsonValue ::
   FilePath
   -> IO (ParseResult JsonValue)
-readJsonValue =
-  error "todo: Course.JsonParser#readJsonValue"
+readJsonValue path = do
+  str <- readFile path
+  pure $ parse jsonValue str
