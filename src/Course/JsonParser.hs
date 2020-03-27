@@ -14,7 +14,6 @@ import Course.Applicative
 import Course.Monad
 import Course.List
 import Course.Optional
-import qualified Prelude as P
 
 -- $setup
 -- >>> :set -XOverloadedStrings
@@ -246,9 +245,9 @@ jsonValue = JsonString <$> jsonString
   ||| JsonRational <$> jsonNumber
   ||| JsonObject <$> jsonObject
   ||| JsonArray <$> jsonArray
-  ||| jsonTrue *> pure JsonTrue
-  ||| jsonFalse *> pure JsonFalse
-  ||| jsonNull *> pure JsonNull
+  ||| JsonTrue <$ jsonTrue
+  ||| JsonFalse <$ jsonFalse
+  ||| JsonNull <$ jsonNull
 
 -- | Read a file into a JSON value.
 --
