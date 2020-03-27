@@ -17,12 +17,15 @@ fastAnagrams ::
   Chars
   -> FilePath
   -> IO (List Chars)
-fastAnagrams target path = do
-  contents <- readFile path
-  let dic = lines contents
-      sort' = listh . sort . hlist
-      normalize = NoCaseString . sort' in
-    pure $ intersectBy ((==) . normalize) dic (normalize target :. Nil)
+fastAnagrams target =
+  (<$>) (flip (filter . flip S.member) (permutations target) . S.fromList . hlist . lines) . readFile
+
+-- fastAnagrams target path = do
+--   contents <- readFile path
+--   let dic = lines contents
+--       sort' = listh . sort . hlist
+--       normalize = NoCaseString . sort' in
+--     pure $ intersectBy ((==) . normalize) dic (normalize target :. Nil)
 
 newtype NoCaseString =
   NoCaseString {

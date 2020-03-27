@@ -34,13 +34,14 @@ anagrams ::
   Chars
   -> FilePath
   -> IO (List Chars)
---anagrams target path =
---  (\c -> intersectBy equalIgnoringCase (lines c) (permutations target)) <$> readFile path
-anagrams target path = do
-  contents <- readFile path
-  let dic = lines contents
-      perms = permutations target in
-    pure $ intersectBy equalIgnoringCase dic perms
+anagrams target =
+  (<$>) (intersectBy equalIgnoringCase (permutations target) . lines) . readFile
+
+-- anagrams target path = do
+--   contents <- readFile path
+--   let dic = lines contents
+--       perms = permutations target in
+--     pure $ intersectBy equalIgnoringCase dic perms
 
 -- Compare two strings for equality, ignoring case
 equalIgnoringCase ::

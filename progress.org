@@ -39,6 +39,8 @@
 * DONE Course.JsonParser
   CLOSED: [2020-03-27 Fri 21:58]
 * TODO Course.Interactive
-* TODO Course.Anagrams
-* TODO Course.FastAnagrams
-* Course.Cheque
+* DONE Course.Anagrams
+  CLOSED: [2020-03-27 Fri 23:27]
+* DONE Course.FastAnagrams
+  CLOSED: [2020-03-27 Fri 23:27]
+* TODO Course.Cheque
