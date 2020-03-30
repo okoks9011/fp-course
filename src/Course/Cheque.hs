@@ -247,6 +247,41 @@ fromChar '9' =
 fromChar _ =
   Empty
 
+showDigit3 ::
+  Digit3
+  -> Chars
+showDigit3 (D1 d1)           = showDigit d1
+showDigit3 (D2 Zero d1)      = showDigit3 (D1 d1)
+
+showDigit3 (D2 One Zero)     = "ten"
+showDigit3 (D2 One One)      = "eleven"
+showDigit3 (D2 One Two)      = "twelve"
+showDigit3 (D2 One Three)    = "thirteen"
+showDigit3 (D2 One Five)     = "fifteen"
+showDigit3 (D2 One Eight)    = "eighteen"
+showDigit3 (D2 One d1)       = showDigit d1 ++ "teen"
+
+showDigit3 (D2 Two Zero)     = "twenty"
+showDigit3 (D2 Three Zero)   = "thirty"
+showDigit3 (D2 Four Zero)    = "forty"
+showDigit3 (D2 Five Zero)    = "fifty"
+showDigit3 (D2 Eight Zero)   = "eighty"
+showDigit3 (D2 d2 Zero)      = showDigit d2 ++ "ty"
+
+showDigit3 (D2 d2 d1)        = showDigit3 (D2 d2 Zero) ++ "-" ++ showDigit3 (D1 d1)
+
+showDigit3 (D3 Zero d2 d1)   = showDigit3 (D2 d2 d1)
+showDigit3 (D3 d3 Zero Zero) = showDigit3 (D1 d3) ++ " hundred"
+showDigit3 (D3 d3 d2 d1)     = showDigit3 (D3 d3 Zero Zero) ++ " and " ++ showDigit3 (D2 d2 d1)
+
+isZeroDigit3 ::
+  Digit3
+  -> Bool
+isZeroDigit3 (D1 Zero) = True
+isZeroDigit3 (D2 Zero Zero) = True
+isZeroDigit3 (D3 Zero Zero Zero) = True
+isZeroDigit3 _ = False
+
 -- | Take a numeric value and produce its English output.
 --
 -- >>> dollars "0"
@@ -320,8 +355,52 @@ fromChar _ =
 --
 -- >>> dollars "456789123456789012345678901234567890123456789012345678901234567890.12"
 -- "four hundred and fifty-six vigintillion seven hundred and eighty-nine novemdecillion one hundred and twenty-three octodecillion four hundred and fifty-six septendecillion seven hundred and eighty-nine sexdecillion twelve quindecillion three hundred and forty-five quattuordecillion six hundred and seventy-eight tredecillion nine hundred and one duodecillion two hundred and thirty-four undecillion five hundred and sixty-seven decillion eight hundred and ninety nonillion one hundred and twenty-three octillion four hundred and fifty-six septillion seven hundred and eighty-nine sextillion twelve quintillion three hundred and forty-five quadrillion six hundred and seventy-eight trillion nine hundred and one billion two hundred and thirty-four million five hundred and sixty-seven thousand eight hundred and ninety dollars and twelve cents"
+
+joinWith ::
+  Chars
+  -> List Chars
+  -> Chars
+joinWith _ Nil = Nil
+joinWith _ (x :. Nil) = x
+joinWith s (hd :. tl) = hd ++ s ++ joinWith s tl
+
+showDollars ::
+  Chars
+  -> Chars
+showDollars d =
+  let d3s = toDigit3 $ listOptional fromChar (reverse d)
+      d3PairRaw = reverse $ filter (not . isZeroDigit3 . fst) $ zip d3s illion
+      d3Pair = if isEmpty d3PairRaw then (D1 Zero, "") :. Nil else d3PairRaw
+      showPair (d3, i) = showDigit3 d3 ++ (if (not . isEmpty) i then (" " ++) else id) i
+  in
+    joinWith " " $ (showPair <$> d3Pair) ++ getUnit (fst <$> d3Pair)
+  where toDigit3 (d1 :. d2 :. d3 :. rest) = D3 d3 d2 d1 :. toDigit3 rest
+        toDigit3 (d1 :. d2 :. rest)       = D2 d2 d1 :. toDigit3 rest
+        toDigit3 (d1 :. rest)             = D1 d1 :. toDigit3 rest
+        toDigit3 Nil                      = Nil
+        getUnit (D3 Zero Zero One :. Nil) = "dollar" :. Nil
+        getUnit (D2 Zero One :. Nil)      = "dollar" :. Nil
+        getUnit (D1 One :. Nil)           = "dollar" :. Nil
+        getUnit _                         = "dollars" :. Nil
+
+showCents ::
+  Chars
+  -> Chars
+showCents c =
+  let d3 = case listOptional fromChar c of
+             d2 :. d1 :. _ -> D2 d2 d1
+             d1 :. _       -> D2 d1 Zero
+             _             -> D1 Zero
+  in
+    showDigit3 d3 ++ " " ++ getUnit d3
+  where getUnit (D2 Zero One) = "cent"
+        getUnit (D1 One)      = "cent"
+        getUnit _             = "cents"
+
 dollars ::
   Chars
   -> Chars
-dollars =
-  error "todo: Course.Cheque#dollars"
+dollars n =
+  let (d, c) = span (/= '.') n
+  in
+    showDollars d ++ " and " ++ showCents c
