@@ -44,4 +44,5 @@
   CLOSED: [2020-03-27 Fri 23:27]
 * DONE Course.FastAnagrams
   CLOSED: [2020-03-27 Fri 23:27]
-* TODO Course.Cheque
+* DONE Course.Cheque
+  CLOSED: [2020-03-30 Mon 21:52]
